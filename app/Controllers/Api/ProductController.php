@@ -3,124 +3,87 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
-use App\Models\ProductModel;
 use App\Services\ProductService;
-
 
 class ProductController extends BaseController
 {
-    protected $productModel;
+    protected $productService;
 
     public function __construct()
-{
-    $this->productModel = new ProductModel();
-    $this->productService = new ProductService();
-}
-
-    // GET /products
-    public function index()
-{
-    $search = $this->request->getGet('search');
-    $perPage = $this->request->getGet('per_page') ?? 10;
-
-    $result = $this->productService->getProducts($search, $perPage);
-
-    return $this->response->setJSON([
-        'status' => true,
-        'message' => 'Product list',
-        'data' => $result['products'],
-        'pagination' => [
-            'current_page' => $result['pager']->getCurrentPage(),
-            'per_page' => $result['pager']->getPerPage(),
-            'total' => $result['pager']->getTotal(),
-            'last_page' => $result['pager']->getPageCount(),
-        ]
-    ]);
-}
-
-    // GET /products/{id}
-    public function show($id)
     {
-        $product = $this->productModel
-            ->select('products.*, categories.name as category_name')
-            ->join('categories', 'categories.id = products.category_id')
-            ->find($id);
-
-        if (!$product) {
-            return $this->response->setStatusCode(404)->setJSON([
-                'status' => false,
-                'message' => 'Product not found'
-            ]);
-        }
-
-        return $this->response->setJSON([
-            'status' => true,
-            'data' => $product
-        ]);
+        $this->productService = new ProductService();
     }
 
-    // POST /products
+    // GET PRODUCTS
+    public function index()
+    {
+        $search = $this->request->getGet('search');
+        $perPage = $this->request->getGet('per_page') ?? 10;
+
+        $result = $this->productService->getProducts($search, $perPage);
+
+        return $this->response->setJSON($result);
+    }
+
+    // GET PRODUCT DETAIL
+    public function show($id)
+    {
+        $result = $this->productService->getProductById($id);
+
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
+        }
+
+        return $this->response->setJSON($result);
+    }
+
+    // CREATE PRODUCT
     public function create()
     {
         $data = $this->request->getJSON(true);
 
-        if (!$this->productModel->insert($data)) {
-            return $this->response->setStatusCode(400)->setJSON([
-                'status' => false,
-                'errors' => $this->productModel->errors()
-            ]);
+        $result = $this->productService->createProduct($data);
+
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
         }
 
-        return $this->response->setStatusCode(201)->setJSON([
-            'status' => true,
-            'message' => 'Product created successfully'
-        ]);
+        return $this->response
+            ->setStatusCode(201)
+            ->setJSON($result);
     }
 
-    // PUT /products/{id}
+    // UPDATE PRODUCT
     public function update($id)
     {
-        $product = $this->productModel->find($id);
-
-        if (!$product) {
-            return $this->response->setStatusCode(404)->setJSON([
-                'status' => false,
-                'message' => 'Product not found'
-            ]);
-        }
-
         $data = $this->request->getJSON(true);
 
-        if (!$this->productModel->update($id, $data)) {
-            return $this->response->setStatusCode(400)->setJSON([
-                'status' => false,
-                'errors' => $this->productModel->errors()
-            ]);
+        $result = $this->productService->updateProduct($id, $data);
+
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
         }
 
-        return $this->response->setJSON([
-            'status' => true,
-            'message' => 'Product updated successfully'
-        ]);
+        return $this->response->setJSON($result);
     }
 
-    // DELETE /products/{id}
+    // DELETE PRODUCT
     public function delete($id)
     {
-        $product = $this->productModel->find($id);
+        $result = $this->productService->deleteProduct($id);
 
-        if (!$product) {
-            return $this->response->setStatusCode(404)->setJSON([
-                'status' => false,
-                'message' => 'Product not found'
-            ]);
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
         }
 
-        $this->productModel->delete($id);
-
-        return $this->response->setJSON([
-            'status' => true,
-            'message' => 'Product deleted successfully'
-        ]);
+        return $this->response->setJSON($result);
     }
 }

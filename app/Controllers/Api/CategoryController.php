@@ -3,112 +3,84 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
-use App\Models\CategoryModel;
-use CodeIgniter\HTTP\ResponseInterface;
+use App\Services\CategoryService;
 
 class CategoryController extends BaseController
 {
-    protected $categoryModel;
+    protected $categoryService;
 
     public function __construct()
     {
-        $this->categoryModel = new CategoryModel();
+        $this->categoryService = new CategoryService();
     }
 
-    // GET /categories
+    // GET CATEGORIES
     public function index()
     {
-        $categories = $this->categoryModel->findAll();
+        $result = $this->categoryService->getCategories();
 
-        return $this->response->setJSON([
-            'status' => true,
-            'message' => 'Category list',
-            'data' => $categories
-        ]);
+        return $this->response->setJSON($result);
     }
 
-    // GET /categories/{id}
+    // GET CATEGORY DETAIL
     public function show($id)
     {
-        $category = $this->categoryModel->find($id);
+        $result = $this->categoryService->getCategoryById($id);
 
-        if (!$category) {
-            return $this->response->setStatusCode(404)->setJSON([
-                'status' => false,
-                'message' => 'Category not found'
-            ]);
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
         }
 
-        return $this->response->setJSON([
-            'status' => true,
-            'data' => $category
-        ]);
+        return $this->response->setJSON($result);
     }
 
-    // POST /categories
+    // CREATE CATEGORY
     public function create()
     {
         $data = $this->request->getJSON(true);
 
-        if (!$this->categoryModel->insert($data)) {
-            return $this->response->setStatusCode(400)->setJSON([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $this->categoryModel->errors()
-            ]);
+        $result = $this->categoryService->createCategory($data);
+
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
         }
 
-        return $this->response->setStatusCode(201)->setJSON([
-            'status' => true,
-            'message' => 'Category created successfully'
-        ]);
+        return $this->response
+            ->setStatusCode(201)
+            ->setJSON($result);
     }
 
-    // PUT /categories/{id}
-    public function update($id = null)
+    // UPDATE CATEGORY
+    public function update($id)
     {
-        $category = $this->categoryModel->find($id);
-
-        if (!$category) {
-            return $this->response->setStatusCode(404)->setJSON([
-                'status' => false,
-                'message' => 'Category not found'
-            ]);
-        }
-
         $data = $this->request->getJSON(true);
 
-        if (!$this->categoryModel->update($id, $data)) {
-            return $this->response->setStatusCode(400)->setJSON([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $this->categoryModel->errors()
-            ]);
+        $result = $this->categoryService->updateCategory($id, $data);
+
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
         }
 
-        return $this->response->setJSON([
-            'status' => true,
-            'message' => 'Category updated successfully'
-        ]);
+        return $this->response->setJSON($result);
     }
 
-    // DELETE /categories/{id}
-    public function delete($id = null)
+    // DELETE CATEGORY
+    public function delete($id)
     {
-        $category = $this->categoryModel->find($id);
+        $result = $this->categoryService->deleteCategory($id);
 
-        if (!$category) {
-            return $this->response->setStatusCode(404)->setJSON([
-                'status' => false,
-                'message' => 'Category not found'
-            ]);
+        if (!$result['status']) {
+            return $this->response
+                ->setStatusCode($result['code'])
+                ->setJSON($result);
         }
 
-        $this->categoryModel->delete($id);
-
-        return $this->response->setJSON([
-            'status' => true,
-            'message' => 'Category deleted successfully'
-        ]);
+        return $this->response->setJSON($result);
     }
 }
