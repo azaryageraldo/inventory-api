@@ -44,7 +44,7 @@ app/
 ### Clone Repository
 
 ```bash
-git clone https://github.com/USERNAME/inventory-api.git
+git clone https://github.com/azaryageraldo/inventory-api.git
 ```
 
 ### Move to Project
