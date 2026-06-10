@@ -15,4 +15,8 @@ $routes->group('api', function($routes) {
     $routes->post('products', 'Api\ProductController::create');
     $routes->put('products/(:num)', 'Api\ProductController::update/$1');
     $routes->delete('products/(:num)', 'Api\ProductController::delete/$1');
+
+    $routes->post('stock/in', 'Api\StockController::stockIn');
+    $routes->post('stock/out', 'Api\StockController::stockOut');
+    $routes->get('stock/history', 'Api\StockController::history');
 });
