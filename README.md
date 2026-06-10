@@ -1,69 +1,215 @@
-# CodeIgniter 4 Application Starter
+# Inventory Management REST API
 
-## What is CodeIgniter?
+Inventory Management REST API built using CodeIgniter 4 and MySQL.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Features
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+- Category CRUD
+- Product CRUD
+- Stock In
+- Stock Out
+- Stock Validation
+- Stock Transaction History
+- Product Search
+- Product Pagination
+- Service Layer Architecture
+- RESTful API
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+---
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## Tech Stack
 
-## Installation & updates
+- PHP 8
+- CodeIgniter 4
+- MySQL
+- REST API
+- Postman
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+---
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+## Project Structure
 
-## Setup
+```bash
+app/
+├── Controllers/
+├── Models/
+├── Services/
+├── Database/
+```
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+---
 
-## Important Change with index.php
+## Installation
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+### Clone Repository
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+```bash
+git clone https://github.com/USERNAME/inventory-api.git
+```
 
-**Please** read the user guide for a better explanation of how CI4 works!
+### Move to Project
 
-## Repository Management
+```bash
+cd inventory-api
+```
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+### Install Dependencies
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+```bash
+composer install
+```
 
-## Server Requirements
+### Setup Environment
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+Copy env file:
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+```bash
+cp env .env
+```
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+Update database configuration in `.env`
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+```env
+database.default.hostname = localhost
+database.default.database = inventory_api
+database.default.username = root
+database.default.password =
+database.default.DBDriver = MySQLi
+database.default.port = 3306
+```
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+---
+
+## Run Migration
+
+```bash
+php spark migrate
+```
+
+---
+
+## Run Server
+
+```bash
+php spark serve
+```
+
+Server will run at:
+
+```bash
+http://localhost:8080
+```
+
+---
+
+# API Endpoints
+
+## Category Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/categories | Get all categories |
+| GET | /api/categories/{id} | Get category detail |
+| POST | /api/categories | Create category |
+| PUT | /api/categories/{id} | Update category |
+| DELETE | /api/categories/{id} | Delete category |
+
+---
+
+## Product Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/products | Get all products |
+| GET | /api/products/{id} | Get product detail |
+| POST | /api/products | Create product |
+| PUT | /api/products/{id} | Update product |
+| DELETE | /api/products/{id} | Delete product |
+
+---
+
+## Product Search & Pagination
+
+### Search
+
+```http
+GET /api/products?search=laptop
+```
+
+### Pagination
+
+```http
+GET /api/products?per_page=5
+```
+
+### Search + Pagination
+
+```http
+GET /api/products?search=asus&per_page=5
+```
+
+---
+
+## Stock Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/stock/in | Add stock |
+| POST | /api/stock/out | Reduce stock |
+| GET | /api/stock/history | Stock transaction history |
+
+---
+
+## Example Request
+
+### Create Product
+
+```http
+POST /api/products
+```
+
+Request Body:
+
+```json
+{
+  "category_id": 1,
+  "name": "Laptop Asus",
+  "price": 15000000,
+  "stock": 10
+}
+```
+
+---
+
+## Business Logic
+
+### Stock Out Validation
+
+Stock cannot be reduced if requested quantity exceeds available stock.
+
+Example response:
+
+```json
+{
+  "status": false,
+  "message": "Insufficient stock"
+}
+```
+
+---
+
+## Architecture
+
+This project uses Service Layer Architecture to separate business logic from controllers.
+
+Flow:
+
+```text
+Controller → Service → Model → Database
+```
+
+---
+
+## Author
+
+Azarya Geraldo
