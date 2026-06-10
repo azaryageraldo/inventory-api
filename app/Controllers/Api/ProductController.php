@@ -4,30 +4,39 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Models\ProductModel;
+use App\Services\ProductService;
+
 
 class ProductController extends BaseController
 {
     protected $productModel;
 
     public function __construct()
-    {
-        $this->productModel = new ProductModel();
-    }
+{
+    $this->productModel = new ProductModel();
+    $this->productService = new ProductService();
+}
 
     // GET /products
     public function index()
-    {
-        $products = $this->productModel
-            ->select('products.*, categories.name as category_name')
-            ->join('categories', 'categories.id = products.category_id')
-            ->findAll();
+{
+    $search = $this->request->getGet('search');
+    $perPage = $this->request->getGet('per_page') ?? 10;
 
-        return $this->response->setJSON([
-            'status' => true,
-            'message' => 'Product list',
-            'data' => $products
-        ]);
-    }
+    $result = $this->productService->getProducts($search, $perPage);
+
+    return $this->response->setJSON([
+        'status' => true,
+        'message' => 'Product list',
+        'data' => $result['products'],
+        'pagination' => [
+            'current_page' => $result['pager']->getCurrentPage(),
+            'per_page' => $result['pager']->getPerPage(),
+            'total' => $result['pager']->getTotal(),
+            'last_page' => $result['pager']->getPageCount(),
+        ]
+    ]);
+}
 
     // GET /products/{id}
     public function show($id)
